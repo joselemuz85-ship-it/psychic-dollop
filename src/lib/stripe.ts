@@ -8,6 +8,10 @@ export const STRIPE_CONFIG = {
   // 365-day access ($79)
   annualUrl: "https://buy.stripe.com/8x2dR93gX5zrgK00sTbfO01",
 
+  // Business contact for manual activation requests
+  businessEmail: "weldsizer-210eaa29@ctomail.io",
+  activationTurnaround: "24 hours",
+
   // Feature labels for the upgrade modal
   proFeatures: [
     { name: "Alloy-Specific Grades", description: "316L, 5083-H116, and more with yield strength data" },
