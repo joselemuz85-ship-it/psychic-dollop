@@ -25,6 +25,8 @@ import {
   buildReportHtml,
   openPrintWindow,
 } from "~/lib/calc-report";
+import { isProUser, setProStatus, isProPreview, setProPreview, STRIPE_CONFIG } from "~/lib/stripe";
+import { UpgradeModal } from "~/components/UpgradeModal";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -63,6 +65,9 @@ function Home() {
   const [error, setError] = useState("");
   const [history, setHistory] = useState<CalcHistoryEntry[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [isPro, setIsPro] = useState(() => isProUser() || isProPreview());
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeFeatureName, setUpgradeFeatureName] = useState("");
 
   // Reset grade when material type changes
   useEffect(() => {
@@ -77,6 +82,13 @@ function Home() {
   useEffect(() => {
     setHistory(loadHistory());
   }, []);
+
+  const requirePro = useCallback((featureName: string): boolean => {
+    if (isPro) return false;
+    setUpgradeFeatureName(featureName);
+    setShowUpgradeModal(true);
+    return true;
+  }, [isPro]);
 
   const gradeInfo = getGradeInfo(materialType, materialGrade);
 
@@ -266,8 +278,25 @@ function Home() {
             </svg>
             <span className="text-xl font-bold text-slate-100">WeldSizer</span>
           </div>
-          <div className="text-xs text-slate-500">
-            Fast. Accurate. Code-Compliant.
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs text-slate-500 sm:inline">
+              Fast. Accurate. Code-Compliant.
+            </span>
+            {isPro ? (
+              <span className="flex items-center gap-1.5 rounded-md bg-cyan-500/15 px-3 py-1.5 text-xs font-semibold text-cyan-400">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
+                </svg>
+                Pro
+              </span>
+            ) : (
+              <button
+                onClick={() => { setUpgradeFeatureName(""); setShowUpgradeModal(true); }}
+                className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+              >
+                Upgrade to Pro
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -371,24 +400,47 @@ function Home() {
             {/* Material Grade */}
             <div className="mb-3">
               <label htmlFor="materialGrade" className="label-text">Grade / Specification</label>
-              <select
-                id="materialGrade"
-                value={materialGrade}
-                onChange={(e) => setMaterialGrade(e.target.value as MaterialGrade)}
-                className="select-field"
-              >
-                {availableGrades.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label} (×{g.factor}, {g.yieldKsi} ksi)
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  id="materialGrade"
+                  value={materialGrade}
+                  onChange={(e) => {
+                    if (!isPro && e.target.value !== "standard") {
+                      requirePro("Alloy-Specific Grades");
+                      return;
+                    }
+                    setMaterialGrade(e.target.value as MaterialGrade);
+                  }}
+                  className="select-field"
+                >
+                  {availableGrades.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.label} (×{g.factor}, {g.yieldKsi} ksi)
+                    </option>
+                  ))}
+                </select>
+                {!isPro && (
+                  <div className="pointer-events-none absolute inset-y-0 right-10 flex items-center">
+                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">Pro</span>
+                  </div>
+                )}
+              </div>
+              {!isPro && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Advanced grades (316L, 5083-H116) available in Pro.
+                </p>
+              )}
             </div>
 
             {/* Yield strength note */}
-            {gradeInfo.yieldKsi && (
+            {gradeInfo.yieldKsi && isPro && (
               <div className="mb-5 rounded-lg border border-cyan-500/10 bg-cyan-500/5 px-3 py-2 text-xs text-cyan-300/80">
                 Yield Strength: <strong>{gradeInfo.yieldKsi} ksi</strong> · Material Factor: ×{gradeInfo.factor}
+              </div>
+            )}
+            {!isPro && (
+              <div className="mb-5 rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 text-xs text-slate-500">
+                Yield strength data available in <button onClick={() => requirePro("Yield Strength Data")} className="font-medium text-amber-400 underline hover:text-amber-300">Pro</button>.
               </div>
             )}
 
@@ -398,7 +450,13 @@ function Home() {
               <select
                 id="codeStandard"
                 value={codeStandard}
-                onChange={(e) => setCodeStandard(e.target.value as CodeStandard)}
+                onChange={(e) => {
+                  if (!isPro && e.target.value === "custom") {
+                    requirePro("Custom Code Standards");
+                    return;
+                  }
+                  setCodeStandard(e.target.value as CodeStandard);
+                }}
                 className="select-field"
               >
                 {CODE_STANDARDS.map((cs) => (
@@ -410,7 +468,7 @@ function Home() {
             </div>
 
             {/* Custom code note input */}
-            {codeStandard === "custom" && (
+            {codeStandard === "custom" && isPro && (
               <div className="mb-5">
                 <label htmlFor="customCodeNote" className="label-text">
                   Custom Reference Note
@@ -494,9 +552,15 @@ function Home() {
                   </div>
 
                   {/* Material info note */}
-                  <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-300">
-                    {gradeInfo.label} · <strong>{gradeInfo.yieldKsi} ksi</strong> yield · Factor: ×{gradeInfo.factor}
-                  </div>
+                  {isPro ? (
+                    <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-300">
+                      {gradeInfo.label} · <strong>{gradeInfo.yieldKsi} ksi</strong> yield · Factor: ×{gradeInfo.factor}
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-slate-700 bg-slate-800/40 px-3 py-2 text-xs text-slate-500">
+                      <button onClick={() => requirePro("Alloy-Specific Grades")} className="font-medium text-amber-400 underline hover:text-amber-300">Upgrade to Pro</button> for material-specific data.
+                    </div>
+                  )}
 
                   {/* Copy Results + Confirmation */}
                   <div className="relative pt-2">
@@ -523,19 +587,35 @@ function Home() {
                   </div>
 
                   {/* PDF Report Button */}
-                  <div className="pt-2">
-                    <button
-                      onClick={handlePrintReport}
-                      className="btn-outline flex w-full items-center justify-center gap-2"
-                    >
-                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
-                      </svg>
-                      Generate PDF Report
-                      <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">Pro</span>
-                    </button>
-                  </div>
+                  {isPro ? (
+                    <div className="pt-2">
+                      <button
+                        onClick={handlePrintReport}
+                        className="btn-outline flex w-full items-center justify-center gap-2"
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
+                        </svg>
+                        Generate PDF Report
+                        <span className="rounded bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">Pro</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="pt-2">
+                      <button
+                        onClick={() => requirePro("PDF Report Export")}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800/40 px-4 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-700/40 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 14h12v8H6z" />
+                        </svg>
+                        PDF Reports
+                        <span className="rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">Pro</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -554,7 +634,7 @@ function Home() {
         </div>
 
         {/* Calculation History */}
-        {showHistory && (
+        {showHistory && isPro && (
           <div className="mt-8">
             <div className="card">
               <div className="mb-4 flex items-center justify-between">
@@ -684,6 +764,13 @@ function Home() {
 
       {/* Hidden print container for PDF report generation */}
       <div id="print-container" className="hidden" style={{ display: "none" }} />
+
+      {/* Upgrade to Pro Modal */}
+      <UpgradeModal
+        open={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName={upgradeFeatureName}
+      />
 
       {/* Footer */}
       <footer className="border-t border-slate-800 py-6 text-center">
