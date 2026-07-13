@@ -1,7 +1,7 @@
 // WeldSizer — Upgrade Modal Component
-// Shown when a free-tier user tries to access a Pro feature
+// One-time access products (30-day / 365-day) — no auto-renewing subscriptions
 
-import { STRIPE_CONFIG } from "~/lib/stripe";
+import { STRIPE_CONFIG, trackUpgradeClick } from "~/lib/stripe";
 
 interface UpgradeModalProps {
   open: boolean;
@@ -13,10 +13,12 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
   if (!open) return null;
 
   const handleMonthly = () => {
+    trackUpgradeClick("upgrade-modal", "30-day");
     window.open(STRIPE_CONFIG.monthlyUrl, "_blank", "noopener");
   };
 
   const handleAnnual = () => {
+    trackUpgradeClick("upgrade-modal", "365-day");
     window.open(STRIPE_CONFIG.annualUrl, "_blank", "noopener");
   };
 
@@ -55,77 +57,77 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
               </p>
             )}
             <p className="mt-1 text-sm text-slate-400">
-              Unlock the full power of WeldSizer
+              Unlock the full power of WeldSizer with a one-time access purchase
             </p>
           </div>
 
           {/* Plan Cards */}
           <div className="mb-6 grid gap-3 sm:grid-cols-2">
-            {/* Monthly */}
-            <div className="rounded-xl border border-slate-600 bg-slate-750 p-5 transition-colors hover:border-cyan-500/50">
+            {/* 30-day access */}
+            <div className="rounded-xl border border-slate-600 bg-slate-750/40 p-5 transition-colors hover:border-cyan-500/50 hover:bg-slate-750/60">
               <div className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">
-                Monthly
+                30-Day Access
               </div>
               <div className="mb-2">
                 <span className="text-3xl font-bold text-slate-100">$9</span>
-                <span className="text-sm text-slate-400">/mo</span>
+                <span className="text-sm text-slate-400"> one-time</span>
               </div>
               <ul className="mb-4 space-y-1.5 text-xs text-slate-400">
                 <li className="flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5 shrink-0 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                   </svg>
-                  All Pro features
+                  All Pro features unlocked
                 </li>
                 <li className="flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5 shrink-0 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                   </svg>
-                  Cancel anytime
+                  No recurring charges
                 </li>
               </ul>
               <button
                 onClick={handleMonthly}
                 className="w-full rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-800"
               >
-                Subscribe $9/mo
+                Get Pro — $9
               </button>
             </div>
 
-            {/* Annual (highlighted) */}
-            <div className="relative rounded-xl border border-amber-500/30 bg-slate-750 p-5 transition-colors hover:border-amber-400/50">
+            {/* 365-day access (highlighted) */}
+            <div className="relative rounded-xl border border-amber-500/30 bg-slate-750/40 p-5 transition-colors hover:border-amber-400/50 hover:bg-slate-750/60">
               <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
                 Best Value
               </div>
               <div className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">
-                Annual
+                365-Day Access
               </div>
               <div className="mb-2">
                 <span className="text-3xl font-bold text-slate-100">$79</span>
-                <span className="text-sm text-slate-400">/yr</span>
+                <span className="text-sm text-slate-400"> one-time</span>
               </div>
-              <div className="mb-3 text-xs text-green-400">
-                Save $29 — 2 months free
+              <div className="mb-3 text-xs font-medium text-green-400">
+                Save $29 vs. 30-day renewals
               </div>
               <ul className="mb-4 space-y-1.5 text-xs text-slate-400">
                 <li className="flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5 shrink-0 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                   </svg>
-                  All Pro features
+                  All Pro features unlocked
                 </li>
                 <li className="flex items-center gap-1.5">
                   <svg className="h-3.5 w-3.5 shrink-0 text-green-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
                   </svg>
-                  2 months free
+                  Full year of access
                 </li>
               </ul>
               <button
                 onClick={handleAnnual}
                 className="w-full rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-800"
               >
-                Subscribe $79/yr
+                Get Pro — $79
               </button>
             </div>
           </div>
@@ -133,7 +135,7 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
           {/* Feature comparison */}
           <div className="mb-4 rounded-lg border border-slate-700 bg-slate-800/60 p-4">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              What you get
+              What you get with Pro
             </h3>
             <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
               {STRIPE_CONFIG.proFeatures.map((f) => (
@@ -149,6 +151,11 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
               ))}
             </div>
           </div>
+
+          {/* One-time purchase note */}
+          <p className="mb-4 text-center text-xs text-slate-600">
+            One-time purchase. No recurring charges. Access expires after the selected period.
+          </p>
 
           {/* Free tier note */}
           <p className="text-center text-xs text-slate-600">

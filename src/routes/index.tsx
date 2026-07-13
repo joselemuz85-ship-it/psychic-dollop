@@ -25,7 +25,7 @@ import {
   buildReportHtml,
   openPrintWindow,
 } from "~/lib/calc-report";
-import { isProUser, setProStatus, isProPreview, setProPreview, STRIPE_CONFIG } from "~/lib/stripe";
+import { isProUser, setProStatus, isProPreview, setProPreview, STRIPE_CONFIG, trackUpgradeClick } from "~/lib/stripe";
 import { UpgradeModal } from "~/components/UpgradeModal";
 
 export const Route = createFileRoute("/")({
@@ -85,6 +85,7 @@ function Home() {
 
   const requirePro = useCallback((featureName: string): boolean => {
     if (isPro) return false;
+    trackUpgradeClick("feature-lock", featureName);
     setUpgradeFeatureName(featureName);
     setShowUpgradeModal(true);
     return true;
@@ -291,7 +292,7 @@ function Home() {
               </span>
             ) : (
               <button
-                onClick={() => { setUpgradeFeatureName(""); setShowUpgradeModal(true); }}
+                onClick={() => { trackUpgradeClick("header", "upgrade"); setUpgradeFeatureName(""); setShowUpgradeModal(true); }}
                 className="rounded-md bg-amber-500/15 px-3 py-1.5 text-xs font-semibold text-amber-400 transition-colors hover:bg-amber-500/25 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-900"
               >
                 Upgrade to Pro
