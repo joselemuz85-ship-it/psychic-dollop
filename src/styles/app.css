@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body {
+    @apply bg-slate-900 text-slate-100 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply rounded-lg bg-cyan-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply rounded-lg border border-slate-600 px-6 py-3 font-semibold text-slate-200 transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-900;
+  }
+
+  .btn-outline {
+    @apply rounded-lg border border-amber-600/50 px-4 py-2.5 text-sm font-medium text-amber-300 transition-colors hover:bg-amber-900/20 hover:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-900;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 placeholder-slate-400 transition-colors focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30;
+  }
+
+  .select-field {
+    @apply w-full appearance-none rounded-lg border border-slate-600 bg-slate-800 px-4 py-3 text-slate-100 transition-colors focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/30;
+  }
+
+  .label-text {
+    @apply mb-1.5 block text-sm font-medium text-slate-300;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-700 bg-slate-800/60 p-6 backdrop-blur-sm;
+  }
+
+  .result-value {
+    @apply text-3xl font-bold text-cyan-400;
+  }
+
+  .result-label {
+    @apply text-sm text-slate-400;
+  }
+}
+
+@layer utilities {
+  @keyframes bounce-once {
+    0%, 100% {
+      transform: translateX(-50%) translateY(-100%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: translateX(-50%) translateY(calc(-100% + 6px));
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
+  .animate-bounce-once {
+    animation: bounce-once 0.4s ease-in-out;
+  }
+}
+
+/* Print styles for PDF report generation */
+@media print {
+  html, body {
+    background: white !important;
+    color: #1e293b !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide everything by default */
+  body > div,
+  header,
+  footer,
+  .card,
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline,
+  input,
+  select,
+  button,
+  label,
+  .label-text,
+  .input-field,
+  .select-field,
+  .result-value,
+  .result-label,
+  [class*="grid"],
+  [class*="space-y"],
+  [class*="gap"],
+  svg:not(.print-only svg) {
+    display: none !important;
+  }
+
+  /* Show only the print container */
+  #print-container,
+  #print-container * {
+    display: block !important;
+  }
+  #print-container table,
+  #print-container tr,
+  #print-container td,
+  #print-container th {
+    display: table-cell !important;
+  }
+  #print-container table {
+    display: table !important;
+  }
+  #print-container tr {
+    display: table-row !important;
+  }
+  #print-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white !important;
+    z-index: 999999;
+    padding: 0;
+    margin: 0;
+  }
+  #print-container * {
+    background: white !important;
+    color: #1e293b !important;
+  }
+  #print-container .header-icon {
+    background: #06b6d4 !important;
+    color: white !important;
+  }
+  #print-container .result-value {
+    color: #0891b2 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+  }
+  #print-container .result-unit {
+    color: #64748b !important;
+  }
+  #print-container .note {
+    background: #f8fafc !important;
+    border-left-color: #06b6d4 !important;
+  }
+  #print-container th {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+  }
+  #print-container td {
+    color: #334155 !important;
+    border-bottom-color: #e2e8f0 !important;
+  }
+  #print-container td:last-child {
+    color: #0f172a !important;
+  }
+  #print-container .footer {
+    color: #94a3b8 !important;
+    border-top-color: #e2e8f0 !important;
+  }
+  #print-container .meta {
+    color: #64748b !important;
+  }
+}
