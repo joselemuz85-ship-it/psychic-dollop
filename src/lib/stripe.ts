@@ -1,12 +1,12 @@
 // WeldSizer — Stripe Checkout Configuration
-// Set these to your live Stripe payment links from the Stripe Dashboard
+// One-time access products (30-day / 365-day) — no auto-renewing subscriptions
 
 export const STRIPE_CONFIG = {
-  // Monthly subscription ($9/mo)
-  monthlyUrl: "https://buy.stripe.com/9AQ___replace_with_your_monthly_link___", // TODO: replace with live Stripe link
+  // 30-day access ($9)
+  monthlyUrl: "https://buy.stripe.com/8x24gzdVB0f751i5NdbfO00",
 
-  // Annual subscription ($79/yr)
-  annualUrl: "https://buy.stripe.com/3cs___replace_with_your_annual_link___", // TODO: replace with live Stripe link
+  // 365-day access ($79)
+  annualUrl: "https://buy.stripe.com/8x2dR93gX5zrgK00sTbfO01",
 
   // Feature labels for the upgrade modal
   proFeatures: [
@@ -67,5 +67,35 @@ export function setProPreview(enabled: boolean): void {
     }
   } catch {
     // Silently fail
+  }
+}
+
+// Upgrade click tracking — simple counter for iteration
+const TRACKING_KEY = "weldsizer-upgrade-clicks";
+
+export function trackUpgradeClick(location: string, plan: string): void {
+  try {
+    const existing = localStorage.getItem(TRACKING_KEY);
+    const clicks = existing ? JSON.parse(existing) : [];
+    clicks.push({
+      location,
+      plan,
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent.substring(0, 80),
+    });
+    // Keep last 50 events
+    if (clicks.length > 50) clicks.splice(0, clicks.length - 50);
+    localStorage.setItem(TRACKING_KEY, JSON.stringify(clicks));
+  } catch {
+    // Silently fail
+  }
+}
+
+export function getUpgradeClicks(): Array<{ location: string; plan: string; timestamp: number }> {
+  try {
+    const raw = localStorage.getItem(TRACKING_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
 }
