@@ -174,7 +174,7 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
                 Already purchased? Activation is manual — we'll enable Pro within {STRIPE_CONFIG.activationTurnaround} of your request.
               </p>
               <button
-                onClick={() => setView("activation")}
+                onClick={() => { trackUpgradeClick("upgrade-modal", "already-purchased-link"); setView("activation"); }}
                 className="text-xs font-medium text-cyan-400 underline transition-colors hover:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 rounded px-2 py-1"
               >
                 I already purchased — activate my account →
@@ -264,6 +264,7 @@ export function UpgradeModal({ open, onClose, featureName }: UpgradeModalProps) 
             {/* Send button (mailto:) */}
             <a
               href={buildMailTo()}
+              onClick={() => trackUpgradeClick("upgrade-modal", "send-activation-request")}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-800"
             >
               <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
